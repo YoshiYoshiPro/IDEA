@@ -2,6 +2,8 @@
 ![](https://img.shields.io/github/license/YoshiYoshiPro/IDEA)
 ![Python version](https://img.shields.io/badge/Python-3.11.4-blue)
 ![pip version](https://img.shields.io/badge/pip-23.1.2-blue)
+![GitHub release (latest by date)](https://img.shields.io/badge/release-v1.0-blue.svg)
+
 
 # IDEA - IdeaxTech非公式DiscordBot
 Idea×Techの非公式AIアシスタントです。  
