@@ -1,34 +1,59 @@
-# インストールした discord.py を読み込む
 import discord
-
-# アクセストークンを読み込み
 import env
+from discord.ext import commands
+import traceback
+import openai
 
-# インテントの設定
+
 intents = discord.Intents.all()
 
-# 接続に必要なオブジェクトを生成
-client = discord.Client(intents=intents)
+
+bot = commands.Bot(command_prefix="/", intents=intents)
+
+messages = [
+    {
+        "role": "system",
+        "content": "You are a helpful assistant. The AI assistant's name is IDEA.",
+    },
+    {"role": "user", "content": "こんにちは。あなたは誰ですか？"},
+    {"role": "assistant", "content": "私は AI アシスタントの IDEA です。なにかお手伝いできることはありますか？"},
+]
 
 
-# 起動時に動作する処理
-@client.event
+@bot.event
 async def on_ready():
     # 起動したらターミナルにログイン通知が表示される
-    print(f"{client.user}がログインしました")
+    print(f"{bot.user}がログインしました")
 
 
-# メッセージ受信時に動作する処理
-@client.event
-async def on_message(message: discord.Message):
-    # メッセージ送信者がBotだった場合は無視する（自分のメッセージを無効化）
-    if message.author == client.user:
+@bot.event
+async def on_command_error(ctx, error):
+    orig_error = getattr(error, "original", error)
+    error_msg = "".join(
+        traceback.TracebackException.from_exception(orig_error).format()
+    )
+    await ctx.send(error_msg)
+
+
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
         return
+    if bot.user.id in [member.id for member in message.mentions]:
+        print(message.content)
+        print(message.content.split(">")[1].lstrip())
+        messages.append(
+            {"role": "user", "content": message.content.split(">")[1].lstrip()}
+        )
 
-    # 「/neko」と発言したら「にゃーん」が返る処理
-    if message.content.startswith("/hello"):
-        await message.channel.send("Hello!")
+        openai.api_key = env.OPENAI_API_KEY
+
+        completion = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo", messages=messages
+        )
+
+        print(completion.choices[0].message.content)
+        await message.channel.send(completion.choices[0].message.content)
 
 
-# Botの起動とDiscordサーバーへの接続
-client.run(env.BOT_TOKEN)
+bot.run(env.BOT_TOKEN)
