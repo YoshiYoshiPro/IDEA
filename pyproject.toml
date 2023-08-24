@@ -8,6 +8,7 @@ authors = ["Mizunanari <54758260+Mizunanari@users.noreply.github.com>"]
 python = "^3.11"
 "discord.py" = "^1.7.3"
 python-dotenv = "^0.20.0"
+requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^0.991"
