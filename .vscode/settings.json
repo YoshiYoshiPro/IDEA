@@ -3,12 +3,12 @@
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
     },
-    "python.formatting.provider": "black",
+    "python.formatting.provider": "none",
     "python.linting.mypyEnabled": true,
     "python.linting.pylintEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
     "[python]": {
-        "editor.defaultFormatter": null
+        "editor.defaultFormatter": "ms-python.black-formatter"
     },
 }
