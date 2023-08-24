@@ -1,11 +1,7 @@
-https://img.shields.io/github/repo-size/YoshiYoshiPro/IDEA
-https://img.shields.io/github/license/YoshiYoshiPro/IDEA
-.. image:: https://img.shields.io/pypi/v/discord.py.svg
-   :target: https://pypi.python.org/pypi/discord.py
-   :alt: PyPI version info
-.. image:: https://img.shields.io/pypi/pyversions/discord.py.svg
-   :target: https://pypi.python.org/pypi/discord.py
-   :alt: PyPI supported Python versions
+![](https://img.shields.io/github/repo-size/YoshiYoshiPro/IDEA)
+![](https://img.shields.io/github/license/YoshiYoshiPro/IDEA)
+![Python version](https://img.shields.io/badge/Python-3.11.4-blue)
+![pip version](https://img.shields.io/badge/pip-23.1.2-blue)
 
 # IDEA - IdeaxTech非公式DiscordBot
 Idea×Techの非公式AIアシスタントです。  
