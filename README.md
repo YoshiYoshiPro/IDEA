@@ -1,3 +1,12 @@
+https://img.shields.io/github/repo-size/YoshiYoshiPro/IDEA
+https://img.shields.io/github/license/YoshiYoshiPro/IDEA
+.. image:: https://img.shields.io/pypi/v/discord.py.svg
+   :target: https://pypi.python.org/pypi/discord.py
+   :alt: PyPI version info
+.. image:: https://img.shields.io/pypi/pyversions/discord.py.svg
+   :target: https://pypi.python.org/pypi/discord.py
+   :alt: PyPI supported Python versions
+
 # IDEA - IdeaxTech非公式DiscordBot
 Idea×Techの非公式AIアシスタントです。  
 ChatGPTのAPIとSerpAPI（予定）を活用して最新情報もキャッチアップしています。
@@ -16,6 +25,9 @@ ChatGPTのAPIとSerpAPI（予定）を活用して最新情報もキャッチア
 
 ## 開発ツール
 - github codespace または remote conteiner(docker)
+
+## ライセンス
+- MIT License
 
 ## 検証
 ローカル環境下で`.env`ファイルをルートディレクトリに作成して、
