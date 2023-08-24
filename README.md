@@ -1,29 +1,39 @@
-# discordpy project template
+# IDEA - IdeaxTech非公式DiscordBot
+Idea×Techの非公式AIアシスタントです。  
+ChatGPTのAPIとSerpAPI（予定）を活用して最新情報もキャッチアップしています。
 
-discord botを作成するテンプレートプロジェクトです。
-詳しくは[こちらのドキュメント](https://www.tokiukaze.com/blog/discord-bot-dev/)をご覧ください。
-
-```text
-.
-├── README.md
-├── discord_bot         # projectファイル
-│       ├── env.py      # 環境変数設定関係
-│       └── main.py     # discordpyスクリプト
-├── doc
-├── .env                # ファイルを作成し、トークンを記載する
-├── poetry.lock         # poetry依存関係
-└── pyproject.toml      # pythonプロジェクトにおける開発設定ファイル
-```
+[discordpy](https://github.com/Rapptz/discord.py)をテンプレート元として拡張しています。
 
 ## 使用言語
-- python
+- Python
 
 ## ライブラリ
 - discordpy
+- openai
 - python-dotenv
 - isort
-- black
+- black（後に変更するかも）
 
 ## 開発ツール
-- vscode
 - github codespace または remote conteiner(docker)
+
+## 検証
+ローカル環境下で`.env`ファイルをルートディレクトリに作成して、
+```
+BOT_TOKEN=<ボットのトークン>
+OPENAI_API_KEY=<OpenAIのAPIキー>
+```
+を設定
+
+## 起動コマンド
+`
+python ./discord_bot/main.py
+`
+
+## パッケージインストール
+`
+pip install -r requirements.txt
+`
+
+## デプロイ先
+- Railway（現状）
