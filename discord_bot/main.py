@@ -43,8 +43,20 @@ async def on_message(message):
         return
     if bot.user.id in [member.id for member in message.mentions]:
         query = message.content.split(">")[1].lstrip()
-        serpapi_result = agent.run(tools["serpapi"].search, query)
-        response_msg = serpapi_result
+        serpapi_tool = next((tool for tool in tools if tool.name == "serpapi"), None)
+        if not serpapi_tool:
+            await message.channel.send("SerpAPIツールが見つかりませんでした。")
+            return
+
+        serpapi_result = agent.run(serpapi_tool.search, query)
+
+        if not serpapi_result:
+            response_msg = "申し訳ございませんが、結果を取得できませんでした。"
+        elif "error" in serpapi_result:
+            response_msg = f"エラーが発生しました: {serpapi_result['error']}"
+        else:
+            response_msg = serpapi_result
+
         await message.channel.send(response_msg)
 
 
