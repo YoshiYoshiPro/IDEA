@@ -2,21 +2,27 @@
 ![](https://img.shields.io/github/license/YoshiYoshiPro/IDEA)
 ![Python version](https://img.shields.io/badge/Python-3.11.4-blue)
 ![pip version](https://img.shields.io/badge/pip-23.1.2-blue)
-![GitHub release (latest by date)](https://img.shields.io/badge/release-v1.0-blue.svg)
+![GitHub release (latest by date)](https://img.shields.io/badge/release-v2.0-blue.svg)
 
 
-# IDEA - IdeaxTech非公式DiscordBot
-Idea×Techの非公式AIアシスタントです。  
-ChatGPTのAPIとSerpAPI（予定）を活用して最新情報もキャッチアップしています。
+# IDEA - Idea×Tech非公式Discord Bot
+Idea×Techの非公式AIアシスタントIDEAです。  
+LangChainを活用して最新情報でも対応できます。  
+> Idea×TechメンバーのGPT無課金を救いたい。  
+Discord上で会話しながら不明点が解決すれば楽じゃね？
 
-[discordpy](https://github.com/Rapptz/discord.py)をテンプレート元として拡張しています。
+そんな思いから生まれました。
+
+このボットは[discordpy](https://github.com/Rapptz/discord.py)をテンプレート元として拡張しています。
 
 ## 使用言語
 - Python
 
-## ライブラリ
+## 主なライブラリ
 - discordpy
 - openai
+- langchain
+- google-api-python-client
 - python-dotenv
 - isort
 - black（後に変更するかも）
@@ -32,18 +38,22 @@ ChatGPTのAPIとSerpAPI（予定）を活用して最新情報もキャッチア
 ```
 BOT_TOKEN=<ボットのトークン>
 OPENAI_API_KEY=<OpenAIのAPIキー>
+GOOGLE_API_KEY=<Googleカスタム検索のAPIキー>
+GOOGLE_CSE_ID=<Googleカスタム検索のID>
+
 ```
-を設定
+を設定してください。  
+Googleのカスタム検索のAPIキー取得は[ここから](https://programmablesearchengine.google.com/)
 
 ## 起動コマンド
-`
+```
 python ./discord_bot/main.py
-`
+```
 
 ## パッケージインストール
-`
+```
 pip install -r requirements.txt
-`
+```
 
 ## デプロイ先
-- Railway（現状）
+- Railway
