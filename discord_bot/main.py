@@ -15,7 +15,8 @@ client = openai
 
 # LLMに前提条件を付与
 agent_kwargs = {
-    "suffix": """開始!ここからの会話は全て日本語で行われる。
+    "suffix": """あなたは、Idea×TechのAIアシスタントIDEAです。以後の質問に答えてください。
+開始!ここからの会話は全て日本語で行われる。
 
 以前のチャット履歴
 {chat_history}
@@ -23,28 +24,6 @@ agent_kwargs = {
 新しいインプット: {input}
 {agent_scratchpad}""",
 }
-
-# Agentの動作を決めるPromptのテンプレート
-template = """
-ユーザーからのリクエストに対して与えられたToolを使って答えてください。以下のToolが与えられています。
-
-{tools}
-
-以下の流れに沿ってリクエストを解決に導いてください。:
-
-Question: あなたが解決すべきリクエストです。
-Thought: Actionに移る前に常に何をすべきかを考えるようにしてください。
-Action: [{tool_names}]から1つだけActionとして選んでください。Actionの名前以外はここには絶対に含めてはいけません。
-Action Input: Actionに入力するInputです。選択したActionに合う形にしてください。
-Observation: ここにはActionの結果得られたObservationが入ります。
-...(Thought/Action/Action Input/Observationは最大5回まで繰り返すことが出来ます。)
-Thought: これまでのプロセスから、あなたがた最終的に答えるべき回答を最後に考えます。
-Final Answer: Questionに対する最終的な答えです。かならずこのステップで回答を終了させてください。
-
-始めてください。
-
-Question: {input}
-{agent_scratchpad}"""
 
 
 # LLMの指定
