@@ -13,6 +13,18 @@ bot = commands.Bot(command_prefix="/", intents=intents)
 openai.api_key = env.OPENAI_API_KEY
 client = openai
 
+# LLMに前提条件を付与
+agent_kwargs = {
+    "suffix": """開始!ここからの会話は全て日本語で行われる。
+
+以前のチャット履歴
+{chat_history}
+
+新しいインプット: {input}
+{agent_scratchpad}""",
+}
+
+
 # LLMの指定
 llm = OpenAI(client=client, temperature=0)
 
@@ -20,7 +32,13 @@ llm = OpenAI(client=client, temperature=0)
 tools = load_tools(["serpapi", "llm-math"], llm=llm)
 
 # LangChainのエージェントを初期化
-agent = initialize_agent(tools, llm, agent="zero-shot-react-description", verbose=True)
+agent = initialize_agent(
+    tools,
+    llm,
+    agent="zero-shot-react-description",
+    agent_kwargs=agent_kwargs,
+    verbose=True,
+)
 
 
 @bot.event
