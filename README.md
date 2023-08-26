@@ -40,7 +40,6 @@ BOT_TOKEN=<ボットのトークン>
 OPENAI_API_KEY=<OpenAIのAPIキー>
 GOOGLE_API_KEY=<Googleカスタム検索のAPIキー>
 GOOGLE_CSE_ID=<Googleカスタム検索のID>
-
 ```
 を設定してください。  
 Googleのカスタム検索のAPIキー取得は[ここから](https://programmablesearchengine.google.com/)
