@@ -1,29 +1,31 @@
 import discord
+from langchain.llms import OpenAI
 import env
 from discord.ext import commands
 import traceback
 import openai
+from langchain.agents import initialize_agent, load_tools
 
 
 intents = discord.Intents.all()
-
-
 bot = commands.Bot(command_prefix="/", intents=intents)
 
-messages = [
-    {
-        "role": "system",
-        "content": "You are a helpful assistant. The AI assistant's name is IDEA.",
-    },
-    {"role": "user", "content": "こんにちは。あなたは誰ですか？"},
-    {"role": "assistant", "content": "私は AI アシスタントの IDEA です。なにかお手伝いできることはありますか？"},
-]
+openai.api_key = env.OPENAI_API_KEY
+client = openai
+
+# LLMの指定
+llm = OpenAI(client=client, temperature=0)
+
+# LangChainのツールをロード
+tools = load_tools(["serpapi", "llm-math"], llm=llm)
+
+# LangChainのエージェントを初期化
+agent = initialize_agent(tools, llm, agent="zero-shot-react-description", verbose=True)
 
 
 @bot.event
 async def on_ready():
-    # 起動したらターミナルにログイン通知が表示される
-    print(f"{bot.user}がログインしました")
+    print(f"{bot.user}がログインしました")  # 起動したらターミナルにログイン通知
 
 
 @bot.event
@@ -37,23 +39,20 @@ async def on_command_error(ctx, error):
 
 @bot.event
 async def on_message(message):
-    if message.author == bot.user:
+    if message.author == bot.user:  # 検知対象がボットの場合
         return
     if bot.user.id in [member.id for member in message.mentions]:
-        print(message.content)
-        print(message.content.split(">")[1].lstrip())
-        messages.append(
-            {"role": "user", "content": message.content.split(">")[1].lstrip()}
-        )
+        query = message.content.split(">")[1].lstrip()
+        serpapi_result = agent.run(query)
 
-        openai.api_key = env.OPENAI_API_KEY
+        if not serpapi_result:
+            response_msg = "申し訳ございませんが、結果を取得できませんでした。"
+        elif "error" in serpapi_result:
+            response_msg = f"エラーが発生しました: {serpapi_result['error']}"
+        else:
+            response_msg = serpapi_result
 
-        completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo", messages=messages
-        )
-
-        print(completion.choices[0].message.content)
-        await message.channel.send(completion.choices[0].message.content)
+        await message.channel.send(response_msg)
 
 
 bot.run(env.BOT_TOKEN)
