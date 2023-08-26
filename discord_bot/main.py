@@ -24,6 +24,28 @@ agent_kwargs = {
 {agent_scratchpad}""",
 }
 
+# Agentの動作を決めるPromptのテンプレート
+template = """
+ユーザーからのリクエストに対して与えられたToolを使って答えてください。以下のToolが与えられています。
+
+{tools}
+
+以下の流れに沿ってリクエストを解決に導いてください。:
+
+Question: あなたが解決すべきリクエストです。
+Thought: Actionに移る前に常に何をすべきかを考えるようにしてください。
+Action: [{tool_names}]から1つだけActionとして選んでください。Actionの名前以外はここには絶対に含めてはいけません。
+Action Input: Actionに入力するInputです。選択したActionに合う形にしてください。
+Observation: ここにはActionの結果得られたObservationが入ります。
+...(Thought/Action/Action Input/Observationは最大5回まで繰り返すことが出来ます。)
+Thought: これまでのプロセスから、あなたがた最終的に答えるべき回答を最後に考えます。
+Final Answer: Questionに対する最終的な答えです。かならずこのステップで回答を終了させてください。
+
+始めてください。
+
+Question: {input}
+{agent_scratchpad}"""
+
 
 # LLMの指定
 llm = OpenAI(client=client, temperature=0)
