@@ -66,14 +66,14 @@ async def on_message(message):
         return
     if bot.user.id in [member.id for member in message.mentions]:
         query = message.content.split(">")[1].lstrip()
-        serpapi_result = agent.run(query)
+        search_result = agent.run(query)
 
-        if not serpapi_result:
+        if not search_result:
             response_msg = "申し訳ございませんが、結果を取得できませんでした。"
-        elif "error" in serpapi_result:
-            response_msg = f"エラーが発生しました: {serpapi_result['error']}"
+        elif "error" in search_result:
+            response_msg = f"エラーが発生しました: {search_result['error']}"
         else:
-            response_msg = serpapi_result
+            response_msg = search_result
 
         await message.channel.send(response_msg)
 
