@@ -4,7 +4,9 @@ import env
 from discord.ext import commands
 import traceback
 import openai
-from langchain.agents import initialize_agent, load_tools
+from langchain.agents import initialize_agent, Tool
+from langchain.utilities.google_search import GoogleSearchAPIWrapper
+from langchain import LLMMathChain
 
 
 intents = discord.Intents.all()
@@ -16,8 +18,24 @@ client = openai
 # LLMの指定
 llm = OpenAI(client=client, temperature=0)
 
-# LangChainのツールをロード
-tools = load_tools(["serpapi", "llm-math"], llm=llm)
+google_search = GoogleSearchAPIWrapper(
+    search_engine="chrome",
+    google_api_key=env.GOOGLE_API_KEY,
+    google_cse_id=env.GOOGLE_CSE_ID,
+)
+llm_math_chain = LLMMathChain(llm=llm, verbose=True)
+
+# LangChainのツール
+tools = [
+    Tool(
+        name="Google Search",
+        func=google_search.run,
+        description="最新の情報や話題について答える場合に利用することができます。また、今日の日付や今日の気温、天気、為替レートなど現在の状況についても確認することができます。入力は検索内容です。",
+    ),
+    Tool(
+        name="Calculator", func=llm_math_chain.run, description="計算をする場合に利用することができます。"
+    ),
+]
 
 # LangChainのエージェントを初期化
 agent = initialize_agent(
