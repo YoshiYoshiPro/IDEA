@@ -6,7 +6,8 @@ import traceback
 import openai
 from langchain.agents import initialize_agent, Tool
 from langchain.utilities.google_search import GoogleSearchAPIWrapper
-from langchain import LLMMathChain
+from langchain import LLMMathChain, PromptTemplate
+from langchain.memory import ConversationSummaryBufferMemory
 
 
 intents = discord.Intents.all()
@@ -14,6 +15,13 @@ bot = commands.Bot(command_prefix="/", intents=intents)
 
 openai.api_key = env.OPENAI_API_KEY
 client = openai
+
+template = """
+{history}
+Human: {input}
+AI:"""
+
+prompt = PromptTemplate(input_variables=["history", "input"], template=template)
 
 # LLMの指定
 llm = OpenAI(client=client, temperature=0)
@@ -43,6 +51,34 @@ agent = initialize_agent(
     llm,
     agent="zero-shot-react-description",
     verbose=True,
+)
+
+
+summary_prompt = PromptTemplate(
+    input_variables=["summary", "new_lines"],
+    template="""
+会話の行を徐々に要約し、前の要約に追加して新しい要約を返してください。
+
+例：
+現在の要約：
+人間はAIに人工知能についてどう思うか尋ねます。AIは人工知能が善の力だと考えています。
+新しい会話の行：
+人間：なぜあなたは人工知能が善の力だと思いますか？
+AI：人工知能は人間が最大限の潜在能力を発揮するのを助けるからです。
+新しい要約：
+人間はAIに人工知能についてどう思うか尋ねます。AIは人工知能が善の力だと考えており、それは人間が最大限の潜在能力を発揮するのを助けるからです。
+例の終わり
+
+現在の要約：
+{summary}
+新しい会話の行：
+{new_lines}
+新しい要約：
+    """,
+)
+
+memory = ConversationSummaryBufferMemory(
+    llm=llm, max_token_limit=200, prompt=summary_prompt  ### <--- ここでプロンプトを上書き
 )
 
 
