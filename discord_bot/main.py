@@ -4,13 +4,14 @@ import env
 from discord.ext import commands
 import traceback
 import openai
+import requests
 from langchain.agents import initialize_agent, Tool
 from langchain.utilities.google_search import GoogleSearchAPIWrapper
 from langchain import LLMMathChain
 
 
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix="/", intents=intents)
+bot = commands.Bot(command_prefix="/", intents=intents, activity=discord.Game("/jpi"))
 
 openai.api_key = env.OPENAI_API_KEY
 client = openai
@@ -46,6 +47,24 @@ agent = initialize_agent(
 )
 
 
+# 画像検索
+def search_google_images(api_key, cse_id, query, num=1):
+    url = "https://www.googleapis.com/customsearch/v1"
+    params = {
+        "key": api_key,
+        "cx": cse_id,
+        "q": query,
+        "searchType": "image",
+        "num": num,
+    }
+
+    response = requests.get(url, params=params)
+    response.raise_for_status()
+    search_results = response.json()
+
+    return [item["link"] for item in search_results["items"]]
+
+
 @bot.event
 async def on_ready():
     print(f"{bot.user}がログインしました")  # 起動したらターミナルにログイン通知
@@ -60,8 +79,28 @@ async def on_command_error(ctx, error):
     await ctx.send(error_msg)
 
 
-@bot.event
-async def on_message(message):
+# @bot.event
+# async def on_message(message):
+#     if message.author == bot.user:  # 検知対象がボットの場合
+#         return
+#     if bot.user.id in [member.id for member in message.mentions]:
+#         query = message.content.split(">")[1].lstrip()
+#         search_result = agent.run(query)
+
+#         if not search_result:
+#             response_msg = "申し訳ございませんが、結果を取得できませんでした。"
+#         elif "error" in search_result:
+#             response_msg = f"エラーが発生しました: {search_result['error']}"
+#         else:
+#             response_msg = search_result
+
+#         await message.channel.send(response_msg)
+#         await bot.process_commands(message)  # コマンドも併用する場合
+
+
+# リスナーとして処理することでスラッシュコマンドを併用
+@bot.listen("on_message")
+async def reply(message):
     if message.author == bot.user:  # 検知対象がボットの場合
         return
     if bot.user.id in [member.id for member in message.mentions]:
@@ -76,6 +115,20 @@ async def on_message(message):
             response_msg = search_result
 
         await message.channel.send(response_msg)
+
+
+@bot.command(name="jpi", description="入力されたキーワードの画像を送信します")  # type: ignore
+async def image_search(ctx: commands.Context, keyword: str):
+    try:
+        image_links = search_google_images(
+            env.GOOGLE_API_KEY, env.GOOGLE_CSE_ID, keyword
+        )
+        if image_links:
+            await ctx.send(image_links[0])  # 最初の画像のリンクを送信
+        else:
+            await ctx.send("該当する画像が見つかりませんでした。")
+    except Exception as e:
+        await ctx.send(f"エラーが発生しました: {e}")
 
 
 bot.run(env.BOT_TOKEN)
