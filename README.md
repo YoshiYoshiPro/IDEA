@@ -2,12 +2,13 @@
 ![](https://img.shields.io/github/license/YoshiYoshiPro/IDEA)
 ![Python version](https://img.shields.io/badge/Python-3.11.4-blue)
 ![pip version](https://img.shields.io/badge/pip-23.1.2-blue)
-![GitHub release (latest by date)](https://img.shields.io/badge/release-v2.0-blue.svg)
+![GitHub release (latest by date)](https://img.shields.io/badge/release-v3.0-blue.svg)
 
 
 # IDEA - Idea×Tech非公式Discord Bot
 Idea×Techの非公式AIアシスタントIDEAです。  
-LangChainを活用して最新情報でも対応できます。  
+LangChainを活用して最新情報も対応しています。  
+`/jpi`コマンドでキーワード画像検索もできます。
 > Idea×TechメンバーのGPT無課金を救いたい。  
 Discord上で会話しながら不明点が解決すれば楽じゃね？
 
