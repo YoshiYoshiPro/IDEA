@@ -8,9 +8,11 @@ import requests
 from langchain.agents import initialize_agent, Tool
 from langchain.utilities.google_search import GoogleSearchAPIWrapper
 from langchain import LLMMathChain
+import discord.app_commands
 
 
 intents = discord.Intents.all()
+intents.message_content = True  # コマンド拡張機能
 bot = commands.Bot(command_prefix="/", intents=intents, activity=discord.Game("/jpi"))
 
 openai.api_key = env.OPENAI_API_KEY
@@ -67,6 +69,7 @@ def search_google_images(api_key, cse_id, query, num=1):
 
 @bot.event
 async def on_ready():
+    await bot.tree.sync()  # グローバルコマンドの登録
     print(f"{bot.user}がログインしました")  # 起動したらターミナルにログイン通知
 
 
@@ -77,25 +80,6 @@ async def on_command_error(ctx, error):
         traceback.TracebackException.from_exception(orig_error).format()
     )
     await ctx.send(error_msg)
-
-
-# @bot.event
-# async def on_message(message):
-#     if message.author == bot.user:  # 検知対象がボットの場合
-#         return
-#     if bot.user.id in [member.id for member in message.mentions]:
-#         query = message.content.split(">")[1].lstrip()
-#         search_result = agent.run(query)
-
-#         if not search_result:
-#             response_msg = "申し訳ございませんが、結果を取得できませんでした。"
-#         elif "error" in search_result:
-#             response_msg = f"エラーが発生しました: {search_result['error']}"
-#         else:
-#             response_msg = search_result
-
-#         await message.channel.send(response_msg)
-#         await bot.process_commands(message)  # コマンドも併用する場合
 
 
 # リスナーとして処理することでスラッシュコマンドを併用
@@ -117,6 +101,7 @@ async def reply(message):
         await message.channel.send(response_msg)
 
 
+# スラッシュコマンド処理
 @bot.command(name="jpi", description="入力されたキーワードの画像を送信します")  # type: ignore
 async def image_search(ctx: commands.Context, keyword: str):
     try:
