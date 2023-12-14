@@ -1,0 +1,15 @@
+# Dockerfile
+FROM python:3.11-slim
+
+# Install pip requirements
+ADD requirements.txt .
+RUN python -m pip install -r requirements.txt
+
+WORKDIR /app
+ADD . /app
+
+# Switching to a non-root user
+RUN useradd appuser && chown -R appuser /app
+USER appuser
+
+CMD ["python", "/app/discord_bot/main.py"]
