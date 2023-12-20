@@ -67,7 +67,7 @@ tools = [
     Tool(
         name="Google Search",
         func=google_search.run,
-        description="最新の情報や話題について答える場合に利用することができます。また、今日の日付や今日の気温、天気、為替レートなど現在の状況についても確認することができます。入力は検索内容です。",
+        description="最新の情報や話題、回答に必要な知識について調べる場合に利用することができます。また、今日の日付や今日の気温、天気、為替レートなど現在の状況についても確認することができます。入力は検索内容です。",
     ),
     Tool(
         name="Calculator", func=llm_math_chain.run, description="計算をする場合に利用することができます。"
@@ -104,7 +104,7 @@ def search_google_images(api_key, cse_id, query, num=1):
 @bot.event
 async def on_ready():
     await bot.tree.sync()  # グローバルコマンドの登録
-    print(f"{bot.user}がログインしました")  # 起動したらターミナルにログイン通知
+    print(f"{bot.user}が起動しました")  # 起動通知
 
 
 @bot.event
