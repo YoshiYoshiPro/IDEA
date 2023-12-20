@@ -1,7 +1,9 @@
+import datetime
 import os
 import traceback
 from logging import Logger
 
+import app_commands
 import discord
 import discord.app_commands
 import openai
@@ -9,15 +11,16 @@ import requests
 from discord.ext import commands
 from langchain import LLMMathChain
 from langchain.agents import Tool, initialize_agent
-from langchain.llms import OpenAI
+from langchain.llms import (
+    ConversationBufferWindowMemory,
+    OpenAI,
+    SystemMessagePromptTemplate,
+)
 from langchain.utilities.google_search import GoogleSearchAPIWrapper
+from openai import AgentType
+from openai_chat.models import MessagesPlaceholder
 
 logger = Logger(name="discord_bot")
-intents = discord.Intents.all()  # 全ての権限を取得
-intents.message_content = True  # メッセージ取得許可
-bot = commands.Bot(
-    command_prefix="/", intents=intents, activity=discord.Game("/jpi")
-)  # botのインスタンス
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 
 # LangSmithの設定
@@ -74,13 +77,78 @@ tools = [
     ),
 ]
 
-# LangChainのエージェントを初期化
-agent = initialize_agent(
-    tools,
-    llm,
-    agent="zero-shot-react-description",
-    verbose=True,
-)
+chain_map = {}  # type: ignore
+
+
+# チェネルIDごとでチェーンを分ける（チャネルごとで会話履歴を保持するため）
+def _get_chain(channel_id: str):
+    if channel_id in chain_map:
+        chain = chain_map[channel_id]
+    else:
+        system_prompt = SystemMessagePromptTemplate.from_template(SYSTEM_TEMPLATE)
+        memory = ConversationBufferWindowMemory(
+            memory_key="memory", return_messages=True, k=5
+        )
+        chain = initialize_agent(
+            tools,
+            llm,
+            agent=AgentType.OPENAI_MULTI_FUNCTIONS,
+            verbose=False,
+            memory=memory,
+            agent_kwargs={
+                "system_message": system_prompt,
+                "extra_prompt_messages": [
+                    MessagesPlaceholder(variable_name="memory"),
+                    MessagesPlaceholder(variable_name="agent_scratchpad"),
+                    SystemMessagePromptTemplate.from_template(
+                        "あなたはIdeaxTechのAIアシスタントのIDEAです。正確に回答することを徹底してください。"
+                    ),
+                ],
+            },
+        )
+        chain_map[channel_id] = chain
+
+    return chain
+
+
+def _get_answer(channel_id, user_name, question):
+    chain = _get_chain(channel_id)
+    now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    answer = chain.run(
+        f"私の名前は`{user_name}`です。今の時間は{now}です。以上を踏まえて以下の質問に答えてください。\n\n{question}"
+    )
+
+    return answer
+
+
+class MyClient(discord.Client):
+    def __init__(self):
+        intents = discord.Intents.all()  # 全ての権限を取得
+        intents.message_content = True  # メッセージ取得許可
+        super().__init__(intents=intents)
+        self.bot = commands.Bot(
+            command_prefix="/", intents=intents, activity=discord.Game("/img")
+        )  # botのインスタンス
+        self.tree = app_commands.CommandTree(self)
+
+    # Health Check用のサーバーを立てる
+
+    # async def setup_hook(self):
+    #     self.tree.copy_global_to(guild=MY_GUILD)  # type: ignore
+    #     await self.tree.sync(guild=MY_GUILD)  # type: ignore
+
+    #     # Wait on Flask to let AppRunner's HealthCheck pass. Endpoint of HealthCheck is assumed to be set to `/ping`.
+    #     app = Flask(__name__)
+
+    #     @app.route("/")
+    #     def ping():
+    #         return "ack"
+
+    #     process = Process(target=app.run, kwargs={"port": 8080, "host": "0.0.0.0"})
+    #     process.start()
+
+
+bot: MyClient = MyClient()
 
 
 # 画像検索
@@ -103,40 +171,46 @@ def search_google_images(api_key, cse_id, query, num=1):
 
 @bot.event
 async def on_ready():
-    await bot.tree.sync()  # グローバルコマンドの登録
-    print(f"{bot.user}が起動しました")  # 起動通知
+    logger.info(f"{bot.user} is ready!")
+
+
+@bot.tree.command(name="ask", description="IDEAに質問することができます。")
+async def ask_question(interaction: discord.Interaction, question: str):
+    await interaction.response.defer(thinking=True, ephemeral=False)
+
+    try:
+        answer = _get_answer(
+            interaction.channel_id,
+            interaction.user.name,
+            question,
+        )
+        # 質問文を引用する
+        fixed_question = "\n".join([f"> {line}" for line in question.split("\n")])
+
+        await interaction.followup.send(f"{fixed_question}\n{answer}")
+    except Exception as e:
+        logger.error(e)
+        await interaction.followup.send(f"問題が発生しました。後ほど質問してください。")
 
 
 @bot.event
-async def on_command_error(ctx, error):
-    orig_error = getattr(error, "original", error)
-    error_msg = "".join(
-        traceback.TracebackException.from_exception(orig_error).format()
-    )
-    await ctx.send(error_msg)
-
-
-# リスナーとして処理することでスラッシュコマンドを併用
-@bot.listen("on_message")
-async def reply(message):
-    if message.author == bot.user:  # 検知対象がボットの場合
+async def on_message(message: discord.Message):
+    # Determines whether or not a mentions has been made. If not, it ignores it.
+    if (
+        not bot.user
+        or message.author.id == bot.user.id
+        or message.author.bot
+        or bot.user.id not in [m.id for m in message.mentions]
+    ):
         return
-    if bot.user.id in [member.id for member in message.mentions]:
-        query = message.content.split(">")[1].lstrip()
-        search_result = agent.run(query)
 
-        if not search_result:
-            response_msg = "申し訳ございませんが、結果を取得できませんでした。"
-        elif "error" in search_result:
-            response_msg = f"エラーが発生しました: {search_result['error']}"
-        else:
-            response_msg = search_result
-
-        await message.channel.send(response_msg)
+    await message.reply(
+        "IdeaxTechのAIアシスタントのIDEAです。\n質問するときは`/ask`\nキーワード画像検索は`/img`を使用してください。"
+    )
 
 
-# スラッシュコマンド処理
-@bot.command(name="jpi", description="入力されたキーワードの画像を送信します")  # type: ignore
+# 画像検索スラッシュコマンド処理
+@bot.tree.command(name="img", description="入力されたキーワードの画像を送信します")  # type: ignore
 async def image_search(ctx: commands.Context, keyword: str):
     try:
         image_links = search_google_images(
