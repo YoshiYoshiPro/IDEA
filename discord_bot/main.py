@@ -26,18 +26,19 @@ from langchain.prompts.chat import (
     SystemMessagePromptTemplate,
 )
 from langchain.utilities.google_search import GoogleSearchAPIWrapper
+from openai_chat.enums import AgentType
 from openai_chat.models import MessagesPlaceholder
 
 logger = Logger(name="discord_bot")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 
 # LangSmithの設定
-os.environ["LANGCHAIN_TRACING_V2"] = os.environ.get("LANGCHAIN_TRACING_V2", "true")
-os.environ["LANGCHAIN_ENDPOINT"] = os.environ.get(
-    "LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com"
-)
-os.environ["LANGCHAIN_API_KEY"] = os.environ["LANGSMITH_API_KEY"]
-os.environ["LANGCHAIN_PROJECT"] = os.environ["LANGSMITH_PROJECT"]
+# os.environ["LANGCHAIN_TRACING_V2"] = os.environ.get("LANGCHAIN_TRACING_V2", "true")
+# os.environ["LANGCHAIN_ENDPOINT"] = os.environ.get(
+#     "LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com"
+# )
+# os.environ["LANGCHAIN_API_KEY"] = os.environ["LANGSMITH_API_KEY"]
+# os.environ["LANGCHAIN_PROJECT"] = os.environ["LANGSMITH_PROJECT"]
 
 SYSTEM_TEMPLATE = """あなたは優秀なチャットボットとして、IdeaxTechのAIアシスタントとして振る舞います。聞かれる質問について、Web上で必要な知識を調べながら、正確に回答してください。
 以下の条件に((厳密に))従ってください。
