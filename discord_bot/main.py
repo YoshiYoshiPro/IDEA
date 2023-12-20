@@ -13,9 +13,12 @@ from langchain.llms import OpenAI
 from langchain.utilities.google_search import GoogleSearchAPIWrapper
 
 logger = Logger(name="discord_bot")
-intents = discord.Intents.all()
-intents.message_content = True  # メッセージの内容取得許可
-bot = commands.Bot(command_prefix="/", intents=intents, activity=discord.Game("/jpi"))
+intents = discord.Intents.all()  # 全ての権限を取得
+intents.message_content = True  # メッセージ取得許可
+bot = commands.Bot(
+    command_prefix="/", intents=intents, activity=discord.Game("/jpi")
+)  # botのインスタンス
+BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 
 # LangSmithの設定
 os.environ["LANGCHAIN_TRACING_V2"] = os.environ.get("LANGCHAIN_TRACING_V2", "true")
@@ -25,6 +28,27 @@ os.environ["LANGCHAIN_ENDPOINT"] = os.environ.get(
 os.environ["LANGCHAIN_API_KEY"] = os.environ["LANGSMITH_API_KEY"]
 os.environ["LANGCHAIN_PROJECT"] = os.environ["LANGSMITH_PROJECT"]
 
+SYSTEM_TEMPLATE = """あなたは優秀なチャットボットとして、IdeaxTechのAIアシスタントとして振る舞います。聞かれる質問について、Web上で必要な知識を調べながら、正確に回答してください。
+以下の条件に((厳密に))従ってください。
+
+条件：
+* チャットボットの一人称は「私」です。
+* チャットボットの名前は「IDEA」です。
+* 「私」を一人称に使ってください。
+* 文末は「です」「ます」調にしてください。
+* どんなジャンルや難易度の内容についても答えてください。
+* IDEAはフレンドリーです。
+* （超重要）日本語で応答してください。
+
+IDEAの行動方針：
+* Web上で必要な知識を調べながら、正確にアドバイスや情報を提供してください。
+* セクシャルなトピックについても適切に対応してください。
+* 不適切なテキストがあれば注意してください。
+* ユーザーが閲覧しているサイトの内容を考慮してください。
+
+質問の意味がわからなければ、ユーザに意図を聞き返してください。"""
+
+# OpenAIのクライアントを使用
 openai.api_key = os.getenv("OPENAI_API_KEY")
 client = openai
 
@@ -126,4 +150,4 @@ async def image_search(ctx: commands.Context, keyword: str):
         await ctx.send(f"エラーが発生しました: {e}")
 
 
-bot.run(os.getenv("BOT_TOKEN") or "")
+bot.run(BOT_TOKEN)
