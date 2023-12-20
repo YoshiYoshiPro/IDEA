@@ -1,13 +1,15 @@
 import datetime
 import os
-import traceback
 from logging import Logger
+from multiprocessing.dummy import Process
 
 import app_commands
 import discord
 import discord.app_commands
 import openai
 import requests
+from aws_lambda_powertools import Logger
+from discord import app_commands
 from discord.ext import commands
 from langchain import LLMMathChain
 from langchain.agents import Tool, initialize_agent
@@ -16,8 +18,14 @@ from langchain.llms import (
     OpenAI,
     SystemMessagePromptTemplate,
 )
+from langchain.memory import ConversationBufferWindowMemory
+from langchain.prompts import MessagesPlaceholder
+from langchain.prompts.chat import (
+    ChatPromptTemplate,
+    HumanMessagePromptTemplate,
+    SystemMessagePromptTemplate,
+)
 from langchain.utilities.google_search import GoogleSearchAPIWrapper
-from openai import AgentType
 from openai_chat.models import MessagesPlaceholder
 
 logger = Logger(name="discord_bot")
