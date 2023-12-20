@@ -1,21 +1,31 @@
-import discord
-from langchain.llms import OpenAI
-import env
-from discord.ext import commands
+import os
 import traceback
+from logging import Logger
+
+import discord
+import discord.app_commands
 import openai
 import requests
-from langchain.agents import initialize_agent, Tool
-from langchain.utilities.google_search import GoogleSearchAPIWrapper
+from discord.ext import commands
 from langchain import LLMMathChain
-import discord.app_commands
+from langchain.agents import Tool, initialize_agent
+from langchain.llms import OpenAI
+from langchain.utilities.google_search import GoogleSearchAPIWrapper
 
-
+logger = Logger(name="discord_bot")
 intents = discord.Intents.all()
-intents.message_content = True  # コマンド拡張機能
+intents.message_content = True  # メッセージの内容取得許可
 bot = commands.Bot(command_prefix="/", intents=intents, activity=discord.Game("/jpi"))
 
-openai.api_key = env.OPENAI_API_KEY
+# LangSmithの設定
+os.environ["LANGCHAIN_TRACING_V2"] = os.environ.get("LANGCHAIN_TRACING_V2", "true")
+os.environ["LANGCHAIN_ENDPOINT"] = os.environ.get(
+    "LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com"
+)
+os.environ["LANGCHAIN_API_KEY"] = os.environ["LANGSMITH_API_KEY"]
+os.environ["LANGCHAIN_PROJECT"] = os.environ["LANGSMITH_PROJECT"]
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
 client = openai
 
 # LLMの指定
@@ -23,8 +33,8 @@ llm = OpenAI(client=client, temperature=0)
 
 google_search = GoogleSearchAPIWrapper(
     search_engine="chrome",
-    google_api_key=env.GOOGLE_API_KEY,
-    google_cse_id=env.GOOGLE_CSE_ID,
+    google_api_key=os.getenv("GOOGLE_API_KEY"),
+    google_cse_id=os.getenv("GOOGLE_CSE_ID"),
 )
 llm_math_chain = LLMMathChain(llm=llm, verbose=True)
 
@@ -106,7 +116,7 @@ async def reply(message):
 async def image_search(ctx: commands.Context, keyword: str):
     try:
         image_links = search_google_images(
-            env.GOOGLE_API_KEY, env.GOOGLE_CSE_ID, keyword
+            os.getenv("GOOGLE_API_KEY"), os.getenv("GOOGLE_CSE_ID"), keyword
         )
         if image_links:
             await ctx.send(image_links[0])  # 最初の画像のリンクを送信
@@ -116,4 +126,4 @@ async def image_search(ctx: commands.Context, keyword: str):
         await ctx.send(f"エラーが発生しました: {e}")
 
 
-bot.run(env.BOT_TOKEN)
+bot.run(os.getenv("BOT_TOKEN") or "")
