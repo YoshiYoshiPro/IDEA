@@ -23,6 +23,9 @@ from langchain.utilities.google_search import GoogleSearchAPIWrapper
 
 logger = Logger(name="discord_bot")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
+guild_ids = os.getenv("DISCORD_GUILD_IDS", "").split(',')
+guilds = [discord.Object(id=int(guild_id)) for guild_id in guild_ids if guild_id]       # 各ギルドIDに対してdiscord.Objectを生成
+
 
 # LangSmithの設定
 # os.environ["LANGCHAIN_TRACING_V2"] = os.environ.get("LANGCHAIN_TRACING_V2", "true")
@@ -122,22 +125,33 @@ def _get_answer(channel_id, user_name, question):
     return answer
 
 
-class MyClient(discord.Client):
+# class MyClient(discord.Client):
+#     def __init__(self):
+#         intents = discord.Intents.all()  # 全ての権限を取得
+#         intents.message_content = True  # メッセージ取得許可
+#         super().__init__(intents=intents)
+#         self.bot = commands.Bot(
+#             command_prefix="/", intents=intents, activity=discord.Game("/img")
+#         )  # botのインスタンス
+#         self.tree = app_commands.CommandTree(self)
+
+
+
+#     async def setup_hook(self):
+#         self.tree.copy_global_to(guild=MY_GUILD)  # type: ignore
+#         await self.tree.sync(guild=MY_GUILD)  # type: ignore
+
+class MyClient(commands.Bot):
     def __init__(self):
-        intents = discord.Intents.all()  # 全ての権限を取得
-        intents.message_content = True  # メッセージ取得許可
-        super().__init__(intents=intents)
-        self.bot = commands.Bot(
-            command_prefix="/", intents=intents, activity=discord.Game("/img")
-        )  # botのインスタンス
+        super().__init__(command_prefix="/", intents=discord.Intents.all())
         self.tree = app_commands.CommandTree(self)
 
+    async def setup_hook(self):
+        # 各ギルドに対してコマンドを同期
+        for guild in guilds:
+            await self.tree.sync(guild=guild)
+
     # Health Check用のサーバーを立てる
-
-    # async def setup_hook(self):
-    #     self.tree.copy_global_to(guild=MY_GUILD)  # type: ignore
-    #     await self.tree.sync(guild=MY_GUILD)  # type: ignore
-
     #     # Wait on Flask to let AppRunner's HealthCheck pass. Endpoint of HealthCheck is assumed to be set to `/ping`.
     #     app = Flask(__name__)
 
@@ -175,7 +189,7 @@ async def on_ready():
     logger.info(f"{bot.user} is ready!")
 
 
-@bot.tree.command(name="ask", description="IDEAに質問することができます。")
+@bot.tree.command(name="ask", description="IDEAに質問することができます。") # type: ignore
 async def ask_question(interaction: discord.Interaction, question: str):
     await interaction.response.defer(thinking=True, ephemeral=False)
 
