@@ -1,14 +1,15 @@
 {
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": "explicit"
-    },
-    "python.formatting.provider": "none",
-    "python.linting.mypyEnabled": true,
-    "python.linting.pylintEnabled": false,
-    "python.testing.pytestEnabled": true,
-    "python.testing.unittestEnabled": false,
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
-    },
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "python.formatting.provider": "none",
+  "python.linting.mypyEnabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "cSpell.words": ["langchain", "llms", "openai"]
 }

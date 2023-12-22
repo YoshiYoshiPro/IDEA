@@ -3,21 +3,15 @@ import os
 from logging import Logger
 from multiprocessing.dummy import Process
 
-import app_commands
 import discord
 import discord.app_commands
 import openai
 import requests
-from aws_lambda_powertools import Logger
 from discord import app_commands
 from discord.ext import commands
-from langchain import LLMMathChain
-from langchain.agents import Tool, initialize_agent
-from langchain.llms import (
-    ConversationBufferWindowMemory,
-    OpenAI,
-    SystemMessagePromptTemplate,
-)
+from langchain.agents import AgentType, Tool, initialize_agent
+from langchain.chains import LLMMathChain
+from langchain.llms import OpenAI
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.prompts import MessagesPlaceholder
 from langchain.prompts.chat import (
@@ -26,8 +20,6 @@ from langchain.prompts.chat import (
     SystemMessagePromptTemplate,
 )
 from langchain.utilities.google_search import GoogleSearchAPIWrapper
-from openai_chat.enums import AgentType
-from openai_chat.models import MessagesPlaceholder
 
 logger = Logger(name="discord_bot")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
@@ -72,7 +64,7 @@ google_search = GoogleSearchAPIWrapper(
     google_api_key=os.getenv("GOOGLE_API_KEY"),
     google_cse_id=os.getenv("GOOGLE_CSE_ID"),
 )
-llm_math_chain = LLMMathChain(llm=llm, verbose=True)
+llm_math_chain = LLMMathChain.from_llm(llm=llm, verbose=True)
 
 # LangChainのツール
 tools = [
