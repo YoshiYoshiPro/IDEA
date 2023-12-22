@@ -124,23 +124,6 @@ def _get_answer(channel_id, user_name, question):
 
     return answer
 
-
-# class MyClient(discord.Client):
-#     def __init__(self):
-#         intents = discord.Intents.all()  # 全ての権限を取得
-#         intents.message_content = True  # メッセージ取得許可
-#         super().__init__(intents=intents)
-#         self.bot = commands.Bot(
-#             command_prefix="/", intents=intents, activity=discord.Game("/img")
-#         )  # botのインスタンス
-#         self.tree = app_commands.CommandTree(self)
-
-
-
-#     async def setup_hook(self):
-#         self.tree.copy_global_to(guild=MY_GUILD)  # type: ignore
-#         await self.tree.sync(guild=MY_GUILD)  # type: ignore
-
 class MyClient(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix="/", intents=discord.Intents.all())
@@ -187,7 +170,7 @@ def search_google_images(api_key, cse_id, query, num=1):
 async def on_ready():
     logger.info(f"{bot.user} is ready!")
 
-
+# 質問回答スラッシュコマンド処理
 @bot.tree.command(name="ask", description="IDEAに質問することができます。") # type: ignore
 async def ask_question(interaction: discord.Interaction, question: str):
     await interaction.response.defer(thinking=True, ephemeral=False)
@@ -225,17 +208,18 @@ async def on_message(message: discord.Message):
 
 # 画像検索スラッシュコマンド処理
 @bot.tree.command(name="img", description="入力されたキーワードの画像を送信します")  # type: ignore
-async def image_search(ctx: commands.Context, keyword: str):
+async def image_search(interaction: discord.Interaction, keyword: str):
     try:
         image_links = search_google_images(
             os.getenv("GOOGLE_API_KEY"), os.getenv("GOOGLE_CSE_ID"), keyword
         )
         if image_links:
-            await ctx.send(image_links[0])  # 最初の画像のリンクを送信
+            await interaction.response.send_message(image_links[0])  # 最初の画像のリンクを送信
         else:
-            await ctx.send("該当する画像が見つかりませんでした。")
+            await interaction.response.send_message("該当する画像が見つかりませんでした。")
     except Exception as e:
-        await ctx.send(f"エラーが発生しました: {e}")
+        await interaction.response.send_message(f"エラーが発生しました: {e}")
+
 
 
 bot.run(BOT_TOKEN)
