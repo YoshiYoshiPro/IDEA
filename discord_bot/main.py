@@ -144,7 +144,6 @@ def _get_answer(channel_id, user_name, question):
 class MyClient(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix="/", intents=discord.Intents.all())
-        self.tree = app_commands.CommandTree(self)
 
     async def setup_hook(self):
         # 各ギルドに対してコマンドを同期
