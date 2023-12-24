@@ -9,6 +9,7 @@ import openai
 import requests
 from discord import app_commands
 from discord.ext import commands
+from dotenv import load_dotenv
 from langchain.agents import AgentType, Tool, initialize_agent
 from langchain.chains import LLMMathChain
 from langchain.llms import OpenAI
@@ -21,10 +22,13 @@ from langchain.prompts.chat import (
 )
 from langchain.utilities.google_search import GoogleSearchAPIWrapper
 
+load_dotenv()
 logger = Logger(name="discord_bot")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
-guild_ids = os.getenv("DISCORD_GUILD_IDS", "").split(',')
-guilds = [discord.Object(id=int(guild_id)) for guild_id in guild_ids if guild_id]       # 各ギルドIDに対してdiscord.Objectを生成
+guild_ids = os.getenv("DISCORD_GUILD_IDS", "").split(",")
+guilds = [
+    discord.Object(id=int(guild_id)) for guild_id in guild_ids if guild_id
+]  # 各ギルドIDに対してdiscord.Objectを生成
 
 
 # LangSmithの設定
@@ -124,6 +128,7 @@ def _get_answer(channel_id, user_name, question):
 
     return answer
 
+
 class MyClient(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix="/", intents=discord.Intents.all())
@@ -170,8 +175,9 @@ def search_google_images(api_key, cse_id, query, num=1):
 async def on_ready():
     logger.info(f"{bot.user} is ready!")
 
+
 # 質問回答スラッシュコマンド処理
-@bot.tree.command(name="ask", description="IDEAに質問することができます。") # type: ignore
+@bot.tree.command(name="ask", description="IDEAに質問することができます。")  # type: ignore
 async def ask_question(interaction: discord.Interaction, question: str):
     await interaction.response.defer(thinking=True, ephemeral=False)
 
@@ -202,12 +208,12 @@ async def on_message(message: discord.Message):
         return
 
     await message.reply(
-        "IdeaxTechのAIアシスタントのIDEAです。\n質問するときは`/ask`\nキーワード画像検索は`/img`を使用してください。"
+        "IdeaxTechのAIアシスタント IDEAです。\n質問するときは`/ask`\nキーワード画像検索は`/img`を使用してください。"
     )
 
 
 # 画像検索スラッシュコマンド処理
-@bot.tree.command(name="img", description="入力されたキーワードの画像を送信します")  # type: ignore
+@bot.tree.command(name="img", description="入力されたキーワードの画像を送信します。")  # type: ignore
 async def image_search(interaction: discord.Interaction, keyword: str):
     try:
         image_links = search_google_images(
@@ -219,7 +225,6 @@ async def image_search(interaction: discord.Interaction, keyword: str):
             await interaction.response.send_message("該当する画像が見つかりませんでした。")
     except Exception as e:
         await interaction.response.send_message(f"エラーが発生しました: {e}")
-
 
 
 bot.run(BOT_TOKEN)
